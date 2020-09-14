@@ -1,0 +1,108 @@
+From 6df98da5cd3fbb33f6f535c6784f037bbadadb84 Mon Sep 17 00:00:00 2001
+From: Steve French <stfrench@microsoft.com>
+Origin: Upstream, https://git.samba.org/?p=cifs-utils.git;a=commit;h=6df98da5cd3fbb33f6f535c6784f037bbadadb84
+Bug-Ubuntu: https://bugs.launchpad.net/bugs/1886551
+Date: Thu, 19 Sep 2019 04:21:16 -0500
+Subject: [PATCH] smbinfo: print the security information needed to decrypt
+ wireshark trace
+
+CCM encryption
+Session Id:   e2 3e ea ae 00 00 00 00
+Session Key:  65 7e 0e d5 3c 06 5a 06 50 a3 ef 96 c1 64 3d 1f
+Server Encryption Key:  5e 42 a7 b5 57 75 d6 56 4a 5d 33 97 e6 45 07 76
+Server Decryption Key:  1f 64 db a3 0f 24 e3 4d b6 31 00 ab 9a af 22 47
+
+Signed-off-by: Steve French <stfrench@microsoft.com>
+---
+ smbinfo.c | 53 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 1 deletion(-)
+
+diff --git a/smbinfo.c b/smbinfo.c
+index b4d497b..2aa5eee 100644
+--- a/smbinfo.c
++++ b/smbinfo.c
+@@ -54,7 +54,17 @@ struct smb_query_info {
+ 	/* char buffer[]; */
+ } __packed;
+ 
++#define SMB3_SIGN_KEY_SIZE 16
++struct smb3_key_debug_info {
++	uint64_t Suid;
++	uint16_t cipher_type;
++	uint8_t auth_key[16]; /* SMB2_NTLMV2_SESSKEY_SIZE */
++	uint8_t	smb3encryptionkey[SMB3_SIGN_KEY_SIZE];
++	uint8_t	smb3decryptionkey[SMB3_SIGN_KEY_SIZE];
++} __attribute__((packed));
++
+ #define CIFS_QUERY_INFO _IOWR(CIFS_IOCTL_MAGIC, 7, struct smb_query_info)
++#define CIFS_DUMP_KEY _IOWR(CIFS_IOCTL_MAGIC, 8, struct smb3_key_debug_info)
+ #define INPUT_BUFFER_LENGTH 16384
+ 
+ int verbose;
+@@ -96,7 +106,9 @@ usage(char *name)
+ 		"  quota:\n"
+ 		"      Prints the quota for a cifs file.\n"
+ 		"  secdesc:\n"
+-		"      Prints the security descriptor for a cifs file.\n",
++		"      Prints the security descriptor for a cifs file.\n"
++		"  keys:\n"
++		"      Prints the decryption information needed to view encrypted network traces.\n",
+ 		name);
+ 	exit(1);
+ }
+@@ -1071,6 +1083,43 @@ static void print_snapshots(struct smb_snapshot_array *psnap)
+ 	printf("\n");
+ }
+ 
++static void
++dump_keys(int f)
++{
++	struct smb3_key_debug_info keys_info;
++	uint8_t *psess_id;
++
++	if (ioctl(f, CIFS_DUMP_KEY, &keys_info) < 0) {
++		fprintf(stderr, "Querying keys information failed with %s\n", strerror(errno));
++		exit(1);
++	}
++
++	if (keys_info.cipher_type == 1)
++		printf("CCM encryption");
++	else if (keys_info.cipher_type == 2)
++		printf("GCM encryption");
++	else if (keys_info.cipher_type == 0)
++		printf("SMB3.0 CCM encryption");
++	else
++		printf("unknown encryption type");
++
++	printf("\nSession Id:  ");
++	psess_id = (uint8_t *)&keys_info.Suid;
++	for (int i = 0; i < 8; i++)
++		printf(" %02x", psess_id[i]);
++
++	printf("\nSession Key: ");
++	for (int i = 0; i < 16; i++)
++		printf(" %02x", keys_info.auth_key[i]);
++	printf("\nServer Encryption Key: ");
++	for (int i = 0; i < SMB3_SIGN_KEY_SIZE; i++)
++		printf(" %02x", keys_info.smb3encryptionkey[i]);
++	printf("\nServer Decryption Key: ");
++	for (int i = 0; i < SMB3_SIGN_KEY_SIZE; i++)
++		printf(" %02x", keys_info.smb3decryptionkey[i]);
++	printf("\n");
++}
++
+ #define CIFS_ENUMERATE_SNAPSHOTS _IOR(CIFS_IOCTL_MAGIC, 6, struct smb_snapshot_array)
+ 
+ #define MIN_SNAPSHOT_ARRAY_SIZE 16 /* See MS-SMB2 section 3.3.5.15.1 */
+@@ -1189,6 +1238,8 @@ int main(int argc, char *argv[])
+ 		quota(f);
+ 	else if (!strcmp(argv[optind], "secdesc"))
+ 		secdesc(f);
++	else if (!strcmp(argv[optind], "keys"))
++		dump_keys(f);
+ 	else {
+ 		fprintf(stderr, "Unknown command %s\n", argv[optind]);
+ 		exit(1);
+-- 
+2.17.1
+

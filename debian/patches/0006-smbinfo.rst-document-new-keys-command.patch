@@ -1,0 +1,30 @@
+From 74a1ced5f706ea6a9cab885693c7755657b81a2a Mon Sep 17 00:00:00 2001
+From: Aurelien Aptel <aaptel@suse.com>
+Origin: Upstream, https://git.samba.org/?p=cifs-utils.git;a=commit;h=74a1ced5f706ea6a9cab885693c7755657b81a2a
+Bug-Ubuntu: https://bugs.launchpad.net/bugs/1886551
+Date: Mon, 14 Oct 2019 19:06:25 +0200
+Subject: [PATCH] smbinfo.rst: document new `keys` command
+
+Signed-off-by: Aurelien Aptel <aaptel@suse.com>
+---
+ smbinfo.rst | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/smbinfo.rst b/smbinfo.rst
+index c8f76e6..7413849 100644
+--- a/smbinfo.rst
++++ b/smbinfo.rst
+@@ -90,6 +90,10 @@ COMMAND
+ - File types
+ - File flags
+ 
++`keys`: Dump session id, encryption keys and decryption keys so that
++the SMB3 traffic of this mount can be decryped e.g. via wireshark
++(requires root).
++
+ *****
+ NOTES
+ *****
+-- 
+2.17.1
+

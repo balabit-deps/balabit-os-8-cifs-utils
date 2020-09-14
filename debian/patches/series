@@ -1,0 +1,6 @@
+0001-Fix-fPIE-casing.patch
+0002-smbinfo-Improve-help-usage-and-add-h-option.patch
+0003-smbinfo-add-GETCOMPRESSION-support.patch
+0004-smbinfo-print-the-security-information-needed-to-dec.patch
+0005-smbinfo-Add-SETCOMPRESSION-support.patch
+0006-smbinfo.rst-document-new-keys-command.patch
