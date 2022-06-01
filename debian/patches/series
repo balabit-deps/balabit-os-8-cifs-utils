@@ -4,3 +4,8 @@
 0004-smbinfo-print-the-security-information-needed-to-dec.patch
 0005-smbinfo-Add-SETCOMPRESSION-support.patch
 0006-smbinfo.rst-document-new-keys-command.patch
+CVE-2020-14342.patch
+CVE-2021-20208-1.patch
+CVE-2021-20208-2.patch
+CVE-2022-27239.patch
+CVE-2022-29869.patch

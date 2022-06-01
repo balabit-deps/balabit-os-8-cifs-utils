@@ -1,3 +1,25 @@
+cifs-utils (2:6.9-1ubuntu0.2) focal-security; urgency=medium
+
+  * SECURITY UPDATE: command injection via shell
+    - debian/patches/CVE-2020-14342.patch: fix injection in mount.cifs.c.
+    - CVE-2020-14342
+  * SECURITY UPDATE: krb5 credential use from host
+    - debian/patches/CVE-2021-20208-1.patch: try to use container
+      namespaces in cifs.upcall.c.
+    - debian/patches/CVE-2021-20208-2.patch: fix regression in kerberos
+      mount in cifs.upcall.c.
+    - CVE-2021-20208
+  * SECURITY UPDATE: buffer overflow in ip= command-line argument
+    - debian/patches/CVE-2022-27239.patch: fix length check for ip option
+      parsing in mount.cifs.c.
+    - CVE-2022-27239
+  * SECURITY UPDATE: information leak via verbose logging
+    - debian/patches/CVE-2022-29869.patch: fix verbose messages on option
+      parsing in mount.cifs.c.
+    - CVE-2022-29869
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Wed, 01 Jun 2022 12:12:44 -0400
+
 cifs-utils (2:6.9-1ubuntu0.1) focal; urgency=medium
 
   * Add 'keys' command to smbinfo (LP: #1886551):
