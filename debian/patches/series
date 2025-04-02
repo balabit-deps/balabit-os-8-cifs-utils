@@ -9,3 +9,6 @@ CVE-2021-20208-1.patch
 CVE-2021-20208-2.patch
 CVE-2022-27239.patch
 CVE-2022-29869.patch
+lp2099917-cifs-utils-Skip-TGT-check-if-valid-service.patch
+CVE-2025-2312-1.patch
+CVE-2025-2312-2.patch

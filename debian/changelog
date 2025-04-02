@@ -1,3 +1,18 @@
+cifs-utils (2:6.9-1ubuntu0.3) focal-security; urgency=medium
+
+  * Skip checking the Kerberos TGT if a valid service ticket
+    is available. (LP: #2099917)
+    - d/p/lp2099917-cifs-utils-Skip-TGT-check-if-valid-service.patch
+  * SECURITY UPDATE: namespace confusion may lead to disclosing
+    sensitive data from host Kerberos credentials cache. (LP: #2099914)
+    - d/p/CVE-2025-2312-1.patch: CIFS.upcall to accomodate new 
+      namespace mount opt.
+    - d/p/CVE-2025-2312-2.patch: cifs-utils: add documentation 
+      for upcall_target.
+    - CVE-2025-2312
+
+ -- Matthew Ruffell <matthew.ruffell@canonical.com>  Wed, 02 Apr 2025 17:10:02 +1300
+
 cifs-utils (2:6.9-1ubuntu0.2) focal-security; urgency=medium
 
   * SECURITY UPDATE: command injection via shell
