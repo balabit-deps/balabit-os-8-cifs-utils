@@ -1,0 +1,67 @@
+commit dc013738ec1f2e67598b264fe2eabf94c5a34570
+From: Paulo Alcantara <pc@manguebit.com>
+Date: Tue, 15 Apr 2025 13:20:52 -0300
+Subject: cifs.upcall: fix memory leaks in check_service_ticket_exits()
+ The error message returned by krb5_get_error_message() must be freed
+ using krb5_free_error_message().
+ 
+ Fixes: af76bf2a11a0 ("cifs-utils: Skip TGT check if valid service ticket is already available")
+ Acked-by: Bharath SM <bharathsm@microsoft.com>
+ Signed-off-by: Paulo Alcantara (Red Hat) <pc@manguebit.com>
+ Signed-off-by: Steve French <stfrench@microsoft.com>
+Bug-Ubuntu: https://bugs.launchpad.net/bugs/2113906
+Bug: https://bugs.launchpad.net/bugs/2099917
+Origin: upstream, https://git.samba.org/?p=cifs-utils.git;a=commit;h=dc013738ec1f2e67598b264fe2eabf94c5a34570
+Last-Update: 2025-06-11
+
+Index: cifs-utils-6.9/cifs.upcall.c
+===================================================================
+--- cifs-utils-6.9.orig/cifs.upcall.c	2025-06-11 17:13:56.920879530 +1200
++++ cifs-utils-6.9/cifs.upcall.c	2025-06-11 17:13:56.916879463 +1200
+@@ -607,33 +607,39 @@
+ #define CIFS_SERVICE_NAME "cifs"
+ 
+ static krb5_error_code check_service_ticket_exists(krb5_ccache ccache,
+-		const char *hostname) {
+-
+-	krb5_error_code rc;
++						   const char *hostname)
++{
+ 	krb5_creds mcreds, out_creds;
++	const char *errmsg;
++	krb5_error_code rc;
+ 
+ 	memset(&mcreds, 0, sizeof(mcreds));
+ 
+ 	rc = krb5_cc_get_principal(context, ccache, &mcreds.client);
+ 	if (rc) {
++		errmsg = krb5_get_error_message(context, rc);
+ 		syslog(LOG_DEBUG, "%s: unable to get client principal from cache: %s",
+-					__func__, krb5_get_error_message(context, rc));
++		       __func__, errmsg);
++		krb5_free_error_message(context, errmsg);
+ 		return rc;
+ 	}
+ 
+ 	rc = krb5_sname_to_principal(context, hostname, CIFS_SERVICE_NAME,
+ 			KRB5_NT_UNKNOWN, &mcreds.server);
+ 	if (rc) {
++		errmsg = krb5_get_error_message(context, rc);
+ 		syslog(LOG_DEBUG, "%s: unable to convert service name (%s) to principal: %s",
+-					__func__, hostname, krb5_get_error_message(context, rc));
++		       __func__, hostname, errmsg);
++		krb5_free_error_message(context, errmsg);
+ 		krb5_free_principal(context, mcreds.client);
+ 		return rc;
+ 	}
+ 
+ 	rc = krb5_timeofday(context, &mcreds.times.endtime);
+ 	if (rc) {
+-		syslog(LOG_DEBUG, "%s: unable to get time: %s",
+-			__func__, krb5_get_error_message(context, rc));
++		errmsg = krb5_get_error_message(context, rc);
++		syslog(LOG_DEBUG, "%s: unable to get time: %s", __func__, errmsg);
++		krb5_free_error_message(context, errmsg);
+ 		goto out_free_principal;
+ 	}
+ 

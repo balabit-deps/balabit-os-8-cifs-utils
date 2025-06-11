@@ -1,3 +1,17 @@
+cifs-utils (2:6.9-1ubuntu0.4) focal-security; urgency=medium
+
+  * SECURITY REGRESSION: Fix memory leak in check_service_ticket_exists()
+    if a valid Kerberos service ticket is not available.
+    (LP: #2113906)
+    - d/p/lp2113906-cifs.upcall-fix-memory-leaks-in-check_service_ticket.patch
+  * SECURITY REGRESSION: Correctly search the calling applications
+    environment for KRB5CCNAME if running kernel is not patched for
+    CVE-2025-2312, fixing mounts for AD users. (LP: #2112614)
+    - d/p/CVE-2025-2312-3.patch: cifs.upcall: correctly treat 
+      UPTARGET_UNSPECIFIED as UPTARGET_APP.
+
+ -- Matthew Ruffell <matthew.ruffell@canonical.com>  Wed, 11 Jun 2025 16:27:38 +1200
+
 cifs-utils (2:6.9-1ubuntu0.3) focal-security; urgency=medium
 
   * Skip checking the Kerberos TGT if a valid service ticket
